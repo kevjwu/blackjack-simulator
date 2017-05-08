@@ -57,15 +57,6 @@ public:
         }
         return;
     }
-//    void display(){
-//        system("clear");
-//        for (int i=0; i<cards.size(); i++){
-//            if (cards[i]->visible==true){
-//                cards[i]->show();
-//            }
-//        }
-//        cout << "\n";
-//    }
     
     void hit_me(Shoe *shoe){
         Card* hit = shoe->deal();
@@ -95,53 +86,7 @@ public:
         }
         return false;
     }
-    
-//    // Dealer stands on all 17s
-//    void play(Shoe *shoe){
-//        cards[1]->flip();
-//        display();
-//        this_thread::sleep_for(std::chrono::seconds(1));
-//        if (bestscore>=17){
-//            return;
-//        }
-//        else {
-//            bool stay = false;
-//            while (stay == false){
-//                this_thread::sleep_for(std::chrono::seconds(1));
-//                hit_me(shoe);
-//                if (bestscore>=17){
-//                    stay = true;
-//                }
-//            }
-//        }
-//        display();
-//    }
 };
-//
-//class MyHand : public Hand {
-//public:
-//    MyHand() {}
-//    MyHand(Card* c1, Card* c2) : Hand(c1, c2){
-//    }
-//    
-//    bool play(Shoe *shoe){
-//        int key = 0;
-//        while (bestscore < 21 && key!=2) {
-//            cout << "Press '1' to hit, '2' to stay\n";
-//            cin >> key;
-//            if (key==1){
-//                hit_me(shoe);
-//            }
-//            display();
-//        }
-//        if (bestscore > 21) {
-//            return true;
-//        }
-//        return false;
-//    }
-//    
-//};
-//
 
 
 

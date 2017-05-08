@@ -46,18 +46,6 @@ public:
         dealerhand = DealerHand(shoe->deal(), shoe->deal());
         dealer_bj = dealerhand.peek();
         Hand init_hand = Hand(shoe->deal(), shoe->deal());
-        bool split = me->new_hand(init_hand);
-        while (split==true){
-            int key = 0;
-            display();
-            cout << "Press '1' to split, '2' to continue playing\n";
-            cin >> key;
-            if (key==1){
-                split = user_split();
-            }
-        }
-        
-        display();
         if (dealer_bj==true && init_hand.hardscore==21){
             cout << "You and dealer both get blackjack. Push.\n";
             return;
@@ -73,6 +61,19 @@ public:
             return;
         }
         else {
+            bool split = me->new_hand(init_hand);
+            while (split==true){
+                int key = 0;
+                display();
+                cout << "Press '1' to split, '2' to continue playing\n";
+                cin >> key;
+                if (key==1){
+                    split = user_split();
+                }
+            }
+            
+            display();
+
             continue_round = user_play();
             if (continue_round==false){
                 shoe->undo_count(dealerhand.cards[1]);
@@ -82,6 +83,7 @@ public:
             cout << "....Dealer's turn....\n";
             dealer_play();
         }
+        
     }
     
     bool user_split(){
