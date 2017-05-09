@@ -20,11 +20,11 @@ public:
     bool dealer_bj;
     bool continue_round;
     int maxHandSize = 2;
-    Player *me;
-    Round(Shoe *s, Player *p){
+    Player me;
+    Round() {}
+    Round(Shoe *s){
         shoe = s;
-        me = p;
-        me->hands.clear();
+        me = Player(s);
     }
     
     void display(){
@@ -33,8 +33,8 @@ public:
         int cardsToShow = max(maxHandSize, (int) dealerhand.cards.size());
         for (int i=0; i<cardsToShow; i++){
             dealerhand.display(i);
-            for (int j=0; j<me->hands.size(); j++){
-                me->hands[j].display(i);
+            for (int j=0; j<me.hands.size(); j++){
+                me.hands[j].display(i);
             }
             cout << "\n";
         }
@@ -44,36 +44,30 @@ public:
     void go(){
         continue_round=false;
         dealerhand = DealerHand(shoe->deal(), shoe->deal());
+        me.start_round(dealerhand.cards[0]);
         dealer_bj = dealerhand.peek();
         Hand init_hand = Hand(shoe->deal(), shoe->deal());
+        me.hands.push_back(init_hand);
+        me.check_split();
         if (dealer_bj==true && init_hand.hardscore==21){
+            display();
             cout << "You and dealer both get blackjack. Push.\n";
             return;
         }
         else if (dealer_bj==true){
+            display();
             cout << "Dealer got blackjack.\n";
             return;
         }
         
         else if (init_hand.hardscore==21){
+            display();
             cout << "Blackjack!\n";
             shoe->undo_count(dealerhand.cards[1]);
             return;
         }
         else {
-            bool split = me->new_hand(init_hand);
-            while (split==true){
-                int key = 0;
-                display();
-                cout << "Press '1' to split, '2' to continue playing\n";
-                cin >> key;
-                if (key==1){
-                    split = user_split();
-                }
-            }
-            
             display();
-
             continue_round = user_play();
             if (continue_round==false){
                 shoe->undo_count(dealerhand.cards[1]);
@@ -86,50 +80,63 @@ public:
         
     }
     
-    bool user_split(){
-        Hand hand1 = Hand(me->hands.back().cards[0], shoe->deal());
-        Hand hand2 = Hand(me->hands.back().cards[1], shoe->deal());
-        me->hands.pop_back();
-        bool split1 = me->new_hand(hand1);
-        bool split2 = me->new_hand(hand2);
-        return split1 || split2;
-    }
-    
     bool user_play(){
         bool continue_play = false;
-        for (vector<Hand>::iterator it = me->hands.begin() ; it != me->hands.end(); ++it)
+        string message_indent = "";
+        for (vector<Hand>::iterator it = me.hands.begin() ; it != me.hands.end(); ++it)
         {
+            message_indent += "\t\t";
             int key = 0;
             bool stop = false;
+            bool can_double = true;
             while (it->bestscore < 21 && stop==false) {
-                cout << "Press '1' to hit, '2' to stay, '3' to double\n";
-                cin >> key;
-                if (key==1){
-                    it->hit_me(shoe);
-                }
-                else if (key==2){
-                    stop=true;
-                }
-                else if (key==3){
-                    it->hit_me(shoe);
-                    stop=true;
+                if (can_double==true){
+                    cout <<  message_indent << "Press '1' to hit, '2' to stay, '3' to double\n";
+                    cin >> key;
+                    if (key==1){
+                        it->hit_me(shoe);
+                        can_double=false;
+                    }
+                    else if (key==2){
+                        stop=true;
+                    }
+                    else if (key==3){
+                        it->hit_me(shoe);
+                        stop=true;
+                    }
+                    else {
+                        cout <<  message_indent << "Invalid key.\n";
+                        continue;
+                    }
                 }
                 else {
-                    cout << "Invalid key.\n";
-                    continue;
+                    display();
+                    cout <<  message_indent << "Press '1' to hit, '2' to stay\n";
+                    cin >> key;
+                    if (key==1){
+                        it->hit_me(shoe);
+                        display();
+                        can_double=false;
+                    }
+                    else if (key==2){
+                        stop=true;
+                    }
+                    else {
+                        cout <<  message_indent << "Invalid key.\n";
+                        continue;
+                    }
                 }
                 if (it->cards.size() > maxHandSize){
                     maxHandSize = it->cards.size();
                 }
-                display();
             }
+            display();
             if (it->bestscore > 21) {
-                cout << "You busted\n";
+                cout <<  message_indent <<"BUST\n";
             }
             else {
                 continue_play = true;
             }
-
         }
         return continue_play;
     }
@@ -156,7 +163,7 @@ public:
         }
         display();
     }
-
+    
     void get_result(){
         if (continue_round==false){
             return;
@@ -165,21 +172,26 @@ public:
             cout << "Dealer busted. You win!\n";
             return;
         }
-        for (vector<Hand>::iterator it = me->hands.begin() ; it != me->hands.end(); ++it)
+        string message_indent = "";
+        for (vector<Hand>::iterator it = me.hands.begin() ; it != me.hands.end(); ++it)
         {
+            message_indent += "\t\t";
+            if (it->bestscore>21){
+                cout <<  message_indent<<"BUST\n";
+            }
             if (it->bestscore > dealerhand.bestscore){
-                cout << "You win!\n";
+                cout <<  message_indent<<"You win!\n";
             }
             else if (it->bestscore < dealerhand.bestscore){
-                cout << "Dealer wins.\n";
+                cout <<  message_indent<<"Dealer wins.\n";
             }
             else {
-                cout << "It's a push.\n";
+                cout <<  message_indent<<"It's a push.\n";
             }
         }
         return;
     }
 };
-    
-    
+
+
 #endif /* round_h */
